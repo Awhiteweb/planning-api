@@ -17,14 +17,14 @@ namespace CouttsWhite.SaveToDo
             this.Client = client;
         }
 
-        public async Task<Stream> GetObject(string key)
+        public async Task<PutObjectResponse> PutObject(string key, Stream input)
         {
-            var request = new GetObjectRequest {
+            var request = new PutObjectRequest {
                 BucketName = this.Bucket,
-                Key = key
+                Key = key,
+                InputStream = input
             };
-            var response = await this.Client.GetObjectAsync(request);
-            return response.ResponseStream;
+            return await this.Client.PutObjectAsync(request);
         }
     }
 }

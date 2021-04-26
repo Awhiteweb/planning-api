@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using Amazon.Lambda.Core;
@@ -26,9 +27,9 @@ namespace CouttsWhite.SaveToDo
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        public async Task<Stream> FunctionHandler( string input, ILambdaContext context )
+        public async Task<string> FunctionHandler( ToDoList input, ILambdaContext context )
         {
-            return await new App( this.Client ).Run( input );
+            return await new App( this.Client ).Save( input );
         }
     }
 
@@ -41,9 +42,39 @@ namespace CouttsWhite.SaveToDo
             this.Client = client;
         }
 
-        public async Task<Stream> Run( string key )
+        public async Task<string> Save( ToDoList list )
         {
-            return await new S3Client( this.Client ).GetObject( key );
+            using MemoryStream ms = new MemoryStream();
+            await System.Text.Json.JsonSerializer.SerializeAsync( ms, list );
+            await new S3Client( this.Client ).PutObject( "", ms );
+            return "Completed";
         }
+    }
+
+    public class ToDoList
+    {
+        [JsonPropertyName( "title" )]
+        public string Title { get; set; }
+
+        [JsonPropertyName( "items" )]
+        public IEnumerable<ToDoItem> Items { get; set; }
+
+        [JsonPropertyName( "completed" )]
+        public bool Completed { get; set; }
+
+        [JsonPropertyName( "updated_by" )]
+        public string UpdatedBy { get; set; }
+    }
+
+    public class ToDoItem
+    {
+        [JsonPropertyName("value")]
+        public string Value { get; set; }
+
+        [JsonPropertyName("completed")]
+        public bool Completed { get; set; }
+
+        [JsonPropertyName("updated_by")]
+        public string UpdatedBy { get; set; }
     }
 }

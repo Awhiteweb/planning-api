@@ -35,18 +35,25 @@ namespace CouttsWhite.SaveToDo
 
     public class App
     {
-        private readonly AmazonS3Client Client;
+        private readonly S3Client Client;
+        private readonly string Prefix = "planning";
+        private readonly IDictionary<bool, string> Keys = new Dictionary<bool, string>
+        {
+            { true, "completed" },
+            { false, "in-progress" }
+        };
 
         public App( AmazonS3Client client )
         {
-            this.Client = client;
+            this.Client = new S3Client( client );
         }
 
         public async Task<string> Save( ToDoList list )
         {
             using MemoryStream ms = new MemoryStream();
             await System.Text.Json.JsonSerializer.SerializeAsync( ms, list );
-            await new S3Client( this.Client ).PutObject( "", ms );
+            await this.Client.PutObject( $"{this.Prefix}/{this.Keys[list.Completed]}/{list.Title}", ms );
+            await this.Client.DeleteObject( $"{this.Prefix}/{this.Keys[!list.Completed]}/{list.Title}" );
             return "Completed";
         }
     }

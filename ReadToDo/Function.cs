@@ -57,6 +57,7 @@ namespace CouttsWhite.ReadToDo
     {
         private readonly S3Client Client;
         private readonly string Prefix = "planning";
+        private readonly string Year = DateTime.UtcNow.ToString( "yyyy" );
 
         public App( AmazonS3Client client )
         {
@@ -70,7 +71,7 @@ namespace CouttsWhite.ReadToDo
 
         public async Task<ListKeyResponse> List(bool completed = false, string continuationToken = null)
         {
-            return await this.Client.ListObjects( completed ? $"{this.Prefix}/completed" : $"{this.Prefix}/in-progress", continuationToken );
+            return await this.Client.ListObjects( completed ? $"{this.Prefix}/completed/" : $"{this.Prefix}/in-progress/", continuationToken );
         }
     }
 

@@ -26,5 +26,15 @@ namespace CouttsWhite.SaveToDo
             };
             return await this.Client.PutObjectAsync(request);
         }
+
+        public async Task<DeleteObjectResponse> DeleteObject( string key )
+        {
+            var request = new DeleteObjectRequest
+            {
+                BucketName = this.Bucket,
+                Key = key
+            };
+            return await this.Client.DeleteObjectAsync( request );
+        }
     }
 }
